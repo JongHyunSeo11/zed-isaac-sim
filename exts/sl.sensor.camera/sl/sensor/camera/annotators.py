@@ -278,21 +278,23 @@ class ZEDAnnotator:
         self.zed_.get_attribute("inputs:cameraModel").set("VIRTUAL_ZED_X" if self.custom_stereo else self.camera_model)
         self.zed_.get_attribute("inputs:serialNumber").set(self.serial_number if self.serial_number else "-1")
 
-        # connect sync node to zed node to trigger the stream
-        self.sync_node.get_attribute("outputs:execOut").connect(self.imu.get_attribute("inputs:execIn"), True)
         self.sync_node.get_attribute("outputs:rationalTimeDenominator").connect(self.sim_time.get_attribute("inputs:referenceTimeDenominator"), True)
         self.sync_node.get_attribute("outputs:rationalTimeNumerator").connect(self.sim_time.get_attribute("inputs:referenceTimeNumerator"), True)
 
-        imu_path = "/base_link/" + get_camera_model(self.camera_model) + "/Imu_Sensor"
-        imu_full_path = self.camera_prim_path[0].pathString + imu_path
-        self.imu.get_attribute("inputs:imuPrim").set(imu_full_path)
         self.zed_.get_attribute("inputs:bitrate").set(self.bitrate)
         self.zed_.get_attribute("inputs:chunkSize").set(self.chunk_size)
         self.zed_.get_attribute("inputs:transportLayerMode").set(self.transport_layer_mode)
+
+        # Keep the video stream trigger independent from the IMU reader. IsaacReadIMU
+        # can skip execution until the physics sensor has a valid sample, but the ZED
+        # streamer must still publish metadata and frames for the SDK receiver.
+        self.sync_node.get_attribute("outputs:execOut").connect(self.zed_.get_attribute("inputs:execIn"), True)
+        self.sync_node.get_attribute("outputs:execOut").connect(self.imu.get_attribute("inputs:execIn"), True)
+        imu_path = "/base_link/" + get_camera_model(self.camera_model) + "/Imu_Sensor"
+        imu_full_path = self.camera_prim_path[0].pathString + imu_path
+        self.imu.get_attribute("inputs:imuPrim").set(imu_full_path)
         self.imu.get_attribute("outputs:orientation").connect(self.zed_.get_attribute("inputs:orientation"), True)
         self.imu.get_attribute("outputs:linAcc").connect(self.zed_.get_attribute("inputs:linearAcceleration"), True)
-        self.imu.get_attribute("outputs:execOut").connect(self.zed_.get_attribute("inputs:execIn"), True)
-
         self.nodes = [self.sync_node, self.sim_time, self.sys_time, self.imu, self.zed_]
 
     def destroy(self) -> None:

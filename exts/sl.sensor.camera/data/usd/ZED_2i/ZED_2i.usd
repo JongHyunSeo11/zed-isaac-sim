@@ -1,0 +1,96 @@
+#usda 1.0
+(
+    defaultPrim = "ZED_2i"
+    doc = "Experimental ZED 2i stereo rig. Visual CAD source: ../cad/ZED2i.step. Baseline and intrinsics are based on /usr/local/zed/settings/SN34341031.conf."
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "ZED_2i"
+{
+    def Xform "base_link"
+    {
+        def Xform "ZED_2I" (
+            assetInfo = {
+                asset sourceCad = @../../cad/ZED2i.step@
+                string source = "Stereolabs official ZED2i.step"
+            }
+        )
+        {
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Xform "Visual" (
+                prepend references = @./ZED2i_visual.usd@</ZED2i_visual>
+            )
+            {
+                # The CAD front points along -Y. USD cameras look along local -Z,
+                # so rotate only the visual mesh and keep the optical prims stable.
+                double3 xformOp:translate = (0.0089685, -0.002616, 0.042756)
+                double xformOp:rotateX = 90
+                double3 xformOp:scale = (0.001, 0.001, 0.001)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateX", "xformOp:scale"]
+            }
+
+            def Camera "CameraLeft"
+            {
+                float2 clippingRange = (0.1, 1000)
+                float focalLength = 2.13726
+                float fStop = 0
+                float horizontalAperture = 3.84
+                float verticalAperture = 2.16
+                token stereoRole = "left"
+                double3 xformOp:translate = (-0.059932, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def Camera "CameraRight"
+            {
+                float2 clippingRange = (0.1, 1000)
+                float focalLength = 2.13726
+                float fStop = 0
+                float horizontalAperture = 3.84
+                float verticalAperture = 2.16
+                token stereoRole = "right"
+                double3 xformOp:translate = (0.059932, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+            }
+
+            def IsaacImuSensor "Imu_Sensor"
+            {
+                bool enabled = true
+                float sensorPeriod = 0.01
+                int linearAccelerationFilterWidth = 1
+                int angularVelocityFilterWidth = 1
+                int orientationFilterWidth = 1
+                double3 xformOp:translate = (0, 0, 0)
+                quatd xformOp:orient = (1, 0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+            }
+        }
+
+        def Xform "ZED_X"
+        {
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            over "CameraLeft" (
+                prepend references = </ZED_2i/base_link/ZED_2I/CameraLeft>
+            )
+            {
+            }
+
+            over "CameraRight" (
+                prepend references = </ZED_2i/base_link/ZED_2I/CameraRight>
+            )
+            {
+            }
+
+            over "Imu_Sensor" (
+                prepend references = </ZED_2i/base_link/ZED_2I/Imu_Sensor>
+            )
+            {
+            }
+        }
+    }
+}

@@ -39,12 +39,40 @@ _ZED_XONE_UHD_SPECIFICATIONS = {
     }
 }
 
+_ZED2I_SPECIFICATIONS = {
+    "HD2K": {
+        "resolution": [2208, 1242],
+        "focal_length": {"standard": 1068.63}
+    },
+    "HD1200": {
+        "resolution": [2208, 1242],
+        "focal_length": {"standard": 1068.63}
+    },
+    "HD1080": {
+        "resolution": [1920, 1080],
+        "focal_length": {"standard": 1068.63}
+    },
+    "HD720": {
+        "resolution": [1280, 720],
+        "focal_length": {"standard": 534.315}
+    },
+    "SVGA": {
+        "resolution": [960, 600],
+        "focal_length": {"standard": 534.315}
+    },
+    "VGA": {
+        "resolution": [672, 376],
+        "focal_length": {"standard": 267.1575}
+    }
+}
+
 # Camera configuration mapping
 _CAMERA_CONFIGS = {
     "ZED_X": {"base_model": "ZED_X", "is_4mm": False, "is_stereo": True, "pixel_size": 3},
     "ZED_X_4MM": {"base_model": "ZED_X", "is_4mm": True, "is_stereo": True, "pixel_size": 3},
     "ZED_XM": {"base_model": "ZED_XM", "is_4mm": False, "is_stereo": True, "pixel_size": 3},
     "ZED_XM_4MM": {"base_model": "ZED_XM", "is_4mm": True, "is_stereo": True, "pixel_size": 3},
+    "ZED_2I": {"base_model": "ZED_2I", "is_4mm": False, "is_stereo": True, "pixel_size": 2.0},
     "ZED_XONE_UHD": {"base_model": "ZED_XONE_UHD", "is_4mm": False, "is_stereo": False, "pixel_size": 2},
     "ZED_XONE_GS": {"base_model": "ZED_XONE_GS", "is_4mm": False, "is_stereo": False, "pixel_size": 3},
     "ZED_XONE_GS_4MM": {"base_model": "ZED_XONE_GS", "is_4mm": True, "is_stereo": False, "pixel_size": 3},
@@ -59,7 +87,9 @@ def get_resolution(camera_model: str, camera_resolution: str) -> Optional[List[i
     Returns:
         The resolution as [width, height] or None if not recognized
     """
-    if camera_model in ["ZED_XONE_UHD"]:
+    if camera_model in ["ZED_2I"]:
+        spec = _ZED2I_SPECIFICATIONS.get(camera_resolution)
+    elif camera_model in ["ZED_XONE_UHD"]:
         spec = _ZED_XONE_UHD_SPECIFICATIONS.get(camera_resolution)
     else:
         spec = _ZEDX_SPECIFICATIONS.get(camera_resolution)
@@ -80,7 +110,9 @@ def get_focal_length(camera_model: str, camera_resolution: List[int], is_4mm: bo
     """
     height = camera_resolution[1]
     
-    if camera_model in ["ZED_XONE_UHD"]:
+    if camera_model in ["ZED_2I"]:
+        _CAMERA_SPEC = _ZED2I_SPECIFICATIONS
+    elif camera_model in ["ZED_XONE_UHD"]:
         _CAMERA_SPEC = _ZED_XONE_UHD_SPECIFICATIONS
     else:
         _CAMERA_SPEC = _ZEDX_SPECIFICATIONS
@@ -134,7 +166,7 @@ def is_stereo_camera(camera_model: str) -> bool:
 
     return config["is_stereo"] if config else True  # Default to stereo for unknown models
 
-def get_pixel_size(camera_model: str) -> int:
+def get_pixel_size(camera_model: str) -> float:
     """Gets the pixel size of the camera model in micrometers.
 
     Args:

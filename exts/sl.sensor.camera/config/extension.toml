@@ -29,6 +29,7 @@ kit = true
 "omni.graph.core" = {}
 "omni.replicator.core" = {}
 "omni.graph.tools" = {}
+"isaacsim.sensors.physics" = {}
 
 [[python.module]]
 name = "sl.sensor.camera"

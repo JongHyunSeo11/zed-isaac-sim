@@ -23,6 +23,7 @@ You can find USD models for various ZED cameras in the extension's `data` folder
 - **ZED X** and **ZED X Mini**
 - **ZED X One GS** and **ZED X One UHD**
 - **Virtual ZED X**
+- **ZED 2i** (experimental local preset, calibrated from `/usr/local/zed/settings/SN34341031.conf`)
 
 Drag and drop the desired `.usd` file into your stage to begin.
 
